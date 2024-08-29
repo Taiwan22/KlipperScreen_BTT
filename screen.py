@@ -832,7 +832,7 @@ class KlipperScreen(Gtk.Window):
 
         sensors = self.apiclient.send_request("server/sensors/list")
         if sensors is not False:
-            self.printer.configure_moon_sensors(sensors)
+            self.printer.configure_moon_sensors(sensors['result'])
 
         if state['result']['klippy_connected'] is False:
             logging.info("Klipper not connected")
