@@ -722,6 +722,8 @@ class KlipperScreen(Gtk.Window):
             logging.debug("Power status changed: %s", data)
             self.printer.process_power_update(data)
             self.panels['splash_screen'].check_power_status()
+        elif action == "notify_sensor_update":
+            self.printer.process_moon_sensors_update(data)
         elif action == "notify_gcode_response" and self.printer.state not in ["error", "shutdown"]:
             if not (data.startswith("B:") or data.startswith("T:")):
                 if data.startswith("echo: "):
@@ -827,6 +829,10 @@ class KlipperScreen(Gtk.Window):
         powerdevs = self.apiclient.send_request("machine/device_power/devices")
         if powerdevs is not False:
             self.printer.configure_power_devices(powerdevs['result'])
+
+        sensors = self.apiclient.send_request("server/sensors/list")
+        if sensors is not False:
+            self.printer.configure_moon_sensors(sensors)
 
         if state['result']['klippy_connected'] is False:
             logging.info("Klipper not connected")

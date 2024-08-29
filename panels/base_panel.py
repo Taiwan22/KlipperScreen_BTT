@@ -22,6 +22,7 @@ class BasePanel(ScreenPanel):
         self.time_update = None
         self.titlebar_items = []
         self.titlebar_name_type = None
+        self.ks_topbar_sensors_cfg = None
         self.buttons_showing = {
             'macros_shortcut': False,
             'printer_select': len(self._config.get_printers()) > 1,
@@ -160,6 +161,26 @@ class BasePanel(ScreenPanel):
                 if device.startswith("heater_generic"):
                     self.control['temp_box'].add(self.labels[f"{device}_box"])
                     n += 1
+
+            self.ks_topbar_sensors_cfg = self._config.get_topbar_sensors()
+            if self.ks_topbar_sensors_cfg is not None:
+                try:
+                    for device, cfg in self.ks_topbar_sensors_cfg.items():
+                        if n >= nlimit + 1:
+                            break
+                        self.labels[device] = Gtk.Label(ellipsize=Pango.EllipsizeMode.START)
+                        self.labels[f'{device}_box'] = Gtk.Box()
+                        icon = self.get_icon_by_name(cfg.get("icon", "heat-up"), img_size)
+                        if icon is not None:
+                            self.labels[f'{device}_box'].pack_start(icon, False, False, 3)
+                        self.labels[f'{device}_box'].pack_start(self.labels[device], False, False, 0)
+                        self.control['temp_box'].add(self.labels[f"{device}_box"])
+                        self.labels[device].set_label(cfg.get("fallback_value", ""))
+                        n += 1
+                    self.update_top_sensors();
+                except Exception as e:
+                    logging.error(f"Couldn't create custom sensors: {e}")
+
             self.control['temp_box'].show_all()
         except Exception as e:
             logging.debug(f"Couldn't create heaters box: {e}")
@@ -183,6 +204,9 @@ class BasePanel(ScreenPanel):
             return self._gtk.Image("heater", img_size, img_size)
         else:
             return self._gtk.Image("heat-up", img_size, img_size)
+
+    def get_icon_by_name(self, icon_name, img_size):
+        return self._gtk.Image(icon_name, img_size, img_size)
 
     def activate(self):
         if self.time_update is None:
@@ -224,6 +248,8 @@ class BasePanel(ScreenPanel):
                             self._screen.updating = False
                             for dialog in self._screen.dialogs:
                                 self._gtk.remove_dialog(dialog)
+        elif action == "notify_sensor_update":
+            self.update_top_sensors()
 
         if action != "notify_status_update" or self._screen.printer is None:
             return
@@ -249,6 +275,31 @@ class BasePanel(ScreenPanel):
                 self.control['temp_box'].pack_start(self.labels[f"{self.current_extruder}_box"], True, True, 3)
                 self.control['temp_box'].reorder_child(self.labels[f"{self.current_extruder}_box"], 0)
                 self.control['temp_box'].show_all()
+
+    def update_top_sensors(self):
+        try:
+            if self.ks_topbar_sensors_cfg is not None:
+                for device, cfg in self.ks_topbar_sensors_cfg.items():
+                    if device in self.labels:
+                        sensor = self._printer.get_moon_sensor_params(cfg["moonraker_sensor_id"])
+                        label_text = cfg.get("fallback_value", "")
+                        if sensor is not None:
+                            value = sensor[cfg["moonraker_parameter"]]
+                            if value is not None:
+                                unit = cfg.get("unit", "")
+                                decimals = cfg.get("decimal_count",1)
+                                value_unit = f"{value:.{decimals}f}{unit}"
+                                name = ""
+                                if self.titlebar_name_type == "full":
+                                    name = device.split()[1] if len(device.split()) > 1 else device
+                                    name = f'{self.prettify(name)}: '
+                                elif self.titlebar_name_type == "short":
+                                    name = device.split()[1] if len(device.split()) > 1 else device
+                                    name = f"{name[:1].upper()}: "
+                                label_text = f"{name}{value_unit}"
+                        self.labels[device].set_label(label_text)
+        except Exception as e:
+            logging.error(f"Error getting value from custom sensors: {e}")
 
     def remove(self, widget):
         self.content.remove(widget)

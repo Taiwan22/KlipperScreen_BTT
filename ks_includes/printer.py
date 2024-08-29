@@ -15,6 +15,7 @@ class Printer:
         self.state_callbacks = state_callbacks
         self.devices = {}
         self.power_devices = {}
+        self.moon_sensors = {}
         self.tools = []
         self.extrudercount = 0
         self.tempdevcount = 0
@@ -136,6 +137,11 @@ class Printer:
         if data['device'] in self.power_devices:
             self.power_devices[data['device']]['status'] = data['status']
 
+    def process_moon_sensors_update(self, data):
+        for sensor in data:
+            if sensor in self.moon_sensors:
+                self.moon_sensors[sensor] = data[sensor]
+
     def change_state(self, state):
         if state not in list(self.state_callbacks):
             return  # disconnected, startup, ready, shutdown, error, paused, printing
@@ -155,6 +161,14 @@ class Printer:
                 "status": "on" if x['status'] == "on" else "off"
             }
         logging.debug(f"Power devices: {self.power_devices}")
+
+    def configure_moon_sensors(self, data):
+        self.moon_sensors = {}
+
+        logging.debug(f"Processing moonraker sensors: {data}")
+        for x in data['sensors'].values():
+            self.moon_sensors[x['id']] = x['values']
+        logging.debug(f"Moonraker sensors: {self.moon_sensors}")
 
     def get_config_section_list(self, search=""):
         if self.config is not None:
@@ -215,6 +229,9 @@ class Printer:
 
     def get_printer_status_data(self):
         data = {
+            "moonraker": {
+                "moon_sensors": {"count": len(self.get_moon_sensors())},
+            },
             "printer": {
                 "extruders": {"count": self.extrudercount},
                 "temperature_devices": {"count": self.tempdevcount},
@@ -240,6 +257,14 @@ class Printer:
 
     def get_power_devices(self):
         return list(self.power_devices)
+    
+    def get_moon_sensors(self):
+        return list(self.moon_sensors)
+
+    def get_moon_sensor_params(self, sensor):
+        if sensor not in self.moon_sensors:
+            return
+        return self.moon_sensors[sensor]
 
     def get_power_device_status(self, device):
         if device not in self.power_devices:

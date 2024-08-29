@@ -170,6 +170,14 @@ class KlipperScreenConfig:
                 numbers = (
                     'moonraker_port', 'move_speed_xy', 'move_speed_z',
                     'calibrate_x_position', 'calibrate_y_position',
+                )            
+            elif section.startswith('topbar_sensor '):
+                strs = (
+                    'moonraker_sensor_id', 'moonraker_parameter', 'icon',
+                    'unit', 'fallback_value',
+                )
+                numbers = (
+                    'decimal_count',
                 )
             elif section.startswith('preheat '):
                 strs = ('gcode', '')
@@ -448,6 +456,15 @@ class KlipperScreenConfig:
     def get_printer_config(self, name):
         if not name.startswith("printer "):
             name = f"printer {name}"
+
+        return None if name not in self.config else self.config[name]
+    
+    def get_topbar_sensors(self):
+        return {sensor_cfg.replace("topbar_sensor ", ""): self.config[sensor_cfg] for sensor_cfg in self.config.sections() if sensor_cfg.startswith("topbar_sensor ")}
+
+    def get_topbar_sensor_config(self, name):
+        if not name.startswith("topbar_sensor "):
+            name = f"topbar_sensor {name}"
 
         return None if name not in self.config else self.config[name]
 
