@@ -829,8 +829,8 @@ class KlipperScreen(Gtk.Window):
         powerdevs = self.apiclient.send_request("machine/device_power/devices")
         if powerdevs is not False:
             self.printer.configure_power_devices(powerdevs['result'])
-
-        sensors = self.apiclient.send_request("server/sensors/list")
+            
+        sensors = self.apiclient.send_request("server/sensors/list?extended=True")
         if sensors is not False:
             self.printer.configure_moon_sensors(sensors['result'])
 

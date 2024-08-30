@@ -283,12 +283,22 @@ class BasePanel(ScreenPanel):
                     if device in self.labels and "moonraker_sensor_id" in cfg and "moonraker_parameter" in cfg:
                         sensor = self._printer.get_moon_sensor_params(cfg["moonraker_sensor_id"])
                         label_text = cfg.get("fallback_value", "")
-                        if sensor is not None and cfg["moonraker_parameter"] in sensor:
-                            value = sensor[cfg["moonraker_parameter"]]
+                        if sensor is not None and cfg["moonraker_parameter"] in sensor and "value" in sensor[cfg["moonraker_parameter"]]:
+                            value = sensor[cfg["moonraker_parameter"]]["value"]
                             if value is not None:
-                                unit = cfg.get("unit", "")
+                                unit = sensor[cfg["moonraker_parameter"]].get("units", "")
                                 decimals = cfg.get("decimal_count",1)
-                                value_unit = f"{value:.{decimals}f}{unit}"
+                                if device == "spool_weight" and not self._config.get_main_config().getboolean('spool_weight_percent', True):
+                                    if value == 0:
+                                        value_unit = "0g"
+                                    elif value in range(10, 101, 10):
+                                        lower_bound = (value - 10) * 10
+                                        upper_bound = value * 10
+                                        value_unit = f"{lower_bound}g ~ {upper_bound}g" if value != 100 else "900g ~ 1Kg"
+                                    else:
+                                        value_unit = "0g"
+                                else:
+                                    value_unit = f"{value:.{decimals}f}{unit}"
                                 name = ""
                                 if self.titlebar_name_type == "full":
                                     name = device.split()[1] if len(device.split()) > 1 else device

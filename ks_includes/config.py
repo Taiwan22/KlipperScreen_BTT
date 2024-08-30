@@ -173,8 +173,7 @@ class KlipperScreenConfig:
                 )            
             elif section.startswith('topbar_sensor '):
                 strs = (
-                    'moonraker_sensor_id', 'moonraker_parameter', 'icon',
-                    'unit', 'fallback_value',
+                    'moonraker_sensor_id', 'moonraker_parameter', 'icon', 'fallback_value',
                 )
                 numbers = (
                     'decimal_count',
