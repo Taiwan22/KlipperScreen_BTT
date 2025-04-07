@@ -1,19 +1,25 @@
 # Panels
 
+### Splash Screen
+![Splash_screen](img/panels/splash_screen.png)
+!!! tip
+    The *'power on'* button will only appear if a power device exists in moonraker and that power device name
+    should be added to `power_devices`  in the printer section of the klipperscreen configuration file
+
 ### Main Menu
 ![Main Menu](img/panels/main_panel.png)
 
-### [Job Status](Job_status.md)
+### [Job Status](Panels/Job_status.md)
 ```py
 panel: job_status
 ```
-![Job Status](img/panels/job_status.png)
+[![Job Status](img/panels/job_status.png)](Panels/Job_status.md)
 
-### [Bed Level](Screws.md)
+### [Bed Level](Panels/Screws.md)
 ```py
 panel: bed_level
 ```
-![Bed Level](img/panels/bed_level.png)
+[![Bed Level](img/panels/bed_level.png)](Panels/Screws.md)
 
 ### Bed Mesh
 ```py
@@ -84,11 +90,11 @@ panel: power
 ```
 ![Power](img/panels/power.png)
 
-### Print
+### Gcodes / Print
 ```py
-panel: print
+panel: gcodes
 ```
-![Print Panel](img/panels/print.png)
+![Gcodes Panel](img/panels/gcodes.png)
 
 ### Retraction
 ```py
@@ -102,20 +108,26 @@ panel: settings
 ```
 ![Settings](img/panels/settings.png)
 
-### System
+### Spoolman
 ```py
-panel: system
+panel: spoolman
 ```
-![System Panel](img/panels/system.png)
+![Spoolman](img/panels/spoolman.png)
 
-### [Temperature](Temperature.md)
+### [Temperature](Panels/Temperature.md)
 ```py
 panel: temperature
 ```
-![Temperature](img/panels/temperature.png)
+[![Temperature](img/panels/temperature.png)](Panels/Temperature.md)
 
-### [Z Calibrate](Zcalibrate.md)
+### Updater
+```py
+panel: updater
+```
+![Updater Panel](img/panels/updater.png)
+
+### [Z Calibrate](Panels/Zcalibrate.md)
 ```py
 panel: zcalibrate
 ```
-![Z Calibrate](img/panels/zcalibrate.png)
+[![Z Calibrate](img/panels/zcalibrate.png)](Panels/Zcalibrate.md)
