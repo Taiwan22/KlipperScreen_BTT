@@ -389,6 +389,8 @@ class BasePanel(ScreenPanel):
         except Exception as e:
             logging.error(f"Error getting value from custom sensors: {e}")
 
+        return False
+
     def remove(self, widget):
         self.content.remove(widget)
 
