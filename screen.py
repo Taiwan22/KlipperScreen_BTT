@@ -408,7 +408,6 @@ class KlipperScreen(Gtk.Window):
                 widget.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
                 widget.set_max_width_chars(40)
         msg.connect("clicked", self.close_popup_message)
-        msg.connect("pressed", self._button_pressed_feedback)
         msg.get_style_context().add_class("message_popup")
         if level == 1:
             msg.get_style_context().add_class("message_popup_echo")
@@ -1087,16 +1086,16 @@ class KlipperScreen(Gtk.Window):
             powerdevs = self.apiclient.send_request("machine/device_power/devices")
             if powerdevs is not False:
                 self.printer.configure_power_devices(powerdevs)
+        if "sensor" in self.server_info["components"]:
+            sensors = self.apiclient.send_request("server/sensors/list?extended=True")
+            if sensors is not False:
+                self.printer.configure_moon_sensors(sensors)
         if "webcam" in self.server_info["components"]:
             cameras = self.apiclient.send_request("server/webcams/list")
             if cameras is not False:
                 self.printer.configure_cameras(cameras['webcams'])
         if "spoolman" in self.server_info["components"]:
             self.printer.enable_spoolman()
-
-        sensors = self.apiclient.send_request("server/sensors/list?extended=True")
-        if sensors is not False:
-            self.printer.configure_moon_sensors(sensors['result'])
 
     def init_klipper(self):
         if self.reinit_count > self.max_retries or 'printer_select' in self._cur_panels:
@@ -1107,6 +1106,9 @@ class KlipperScreen(Gtk.Window):
             self.connect_to_moonraker()
             return False
         self.reinit_count += 1
+        self.server_info = self.apiclient.get_server_info()
+        logging.info(f"Moonraker info {self.server_info}")
+        if self.server_info['klippy_connected'] is False:
             msg = _("Moonraker: connected") + "\n\n"
             msg += f"Klipper: {self.server_info['klippy_state']}" + "\n\n"
             if self.reinit_count <= self.max_retries:
